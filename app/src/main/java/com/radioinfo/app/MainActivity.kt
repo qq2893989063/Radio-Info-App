@@ -34,13 +34,13 @@ class MainActivity : AppCompatActivity() {
         try {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
-            Log.d(TAG, "layout inflated")
+
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.title = "Radio Info App"
 
             setupViewPager()
-            Log.d(TAG, "ViewPager setup done")
-
             checkAndRequestPermissions()
-            Log.d(TAG, "permissions requested")
+            Log.d(TAG, "onCreate done")
         } catch (e: Exception) {
             Log.e(TAG, "onCreate error", e)
             Toast.makeText(this, "Init error: ${e.message}", Toast.LENGTH_LONG).show()
@@ -70,6 +70,6 @@ class MainActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d(TAG, "Permissions result: ${grantResults.count { it == 0 }}/${grantResults.size} granted")
+        Log.d(TAG, "Permissions: ${grantResults.count { it == 0 }}/${grantResults.size}")
     }
 }

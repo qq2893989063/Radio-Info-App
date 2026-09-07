@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.RadioInfo" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.RadioInfo" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">#0F3460</item>
+        <item name="colorPrimaryDark">#16213E</item>
+        <item name="colorAccent">#E94560</item>
+        <item name="android:windowBackground">#1A1A2E</item>
+        <item name="android:statusBarColor">#16213E</item>
+        <item name="android:navigationBarColor">#16213E</item>
     </style>
 </resources>
