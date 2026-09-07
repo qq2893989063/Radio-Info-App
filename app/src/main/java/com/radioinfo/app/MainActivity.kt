@@ -1,4 +1,4 @@
-﻿package com.radioinfo.app
+package com.radioinfo.app
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -16,11 +16,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val tabTitles = arrayOf(
-        "SIM 状态",
-        "RAT 优先级",
-        "WiFi 信道",
-        "频段状态",
-        "信号强度"
+        "SIM",
+        "RAT",
+        "WiFi",
+        "Band",
+        "Signal"
     )
 
     private val requiredPermissions = mutableListOf<String>().apply {
@@ -39,8 +39,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "\uD83D\uDCE1 无线信号探测器"
+        // Set title directly on toolbar without setSupportActionBar
+        binding.toolbar.title = "Radio Info App"
 
         checkAndRequestPermissions()
         setupViewPager()
@@ -49,16 +49,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupViewPager() {
         val adapter = ViewPagerAdapter(this)
         binding.viewPager.adapter = adapter
+        binding.viewPager.offscreenPageLimit = 4
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = tabTitles[position]
-            when (position) {
-                0 -> tab.setIcon(R.drawable.ic_sim)
-                1 -> tab.setIcon(R.drawable.ic_rat)
-                2 -> tab.setIcon(R.drawable.ic_wifi)
-                3 -> tab.setIcon(R.drawable.ic_band)
-                4 -> tab.setIcon(R.drawable.ic_signal)
-            }
         }.attach()
     }
 
@@ -83,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
             if (denied.isNotEmpty()) {
                 Toast.makeText(this,
-                    "部分权限未授予，功能可能受限",
+                    "Some permissions not granted, features may be limited",
                     Toast.LENGTH_LONG
                 ).show()
             }
