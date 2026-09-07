@@ -34,31 +34,39 @@ class RatPriorityFragment : Fragment() {
             val ctx = context ?: return
             val tm = ctx.getSystemService(android.telephony.TelephonyManager::class.java) ?: return
             val sb = StringBuilder()
-            sb.appendLine("=== RAT ===")
-            sb.appendLine("Data: ${netType(tm.dataNetworkType)}")
-            sb.appendLine("Voice: ${netType(tm.voiceNetworkType)}")
-            sb.appendLine("Carrier: ${tm.networkOperatorName ?: "N/A"}")
+            sb.appendLine("=== 无线接入技术(RAT) ===")
+            sb.appendLine("")
+            sb.appendLine("[数据网络类型]")
+            sb.appendLine("  当前: ${netType(tm.dataNetworkType)}")
+            sb.appendLine("[语音网络类型]")
+            sb.appendLine("  当前: ${netType(tm.voiceNetworkType)}")
+            sb.appendLine("  (数据网络=上网用, 语音网络=打电话用)")
+            sb.appendLine("")
+            sb.appendLine("当前运营商: ${tm.networkOperatorName ?: "无"}")
             try {
                 val cells = tm.allCellInfo ?: emptyList()
-                sb.appendLine("Cells: ${cells.size}")
-                for ((i, c) in cells.take(5).withIndex()) {
+                sb.appendLine("")
+                sb.appendLine("[检测到的基站] 共${cells.size}个")
+                sb.appendLine("  S=已注册(服务中) N=邻区(未连接)")
+                for ((i, c) in cells.take(8).withIndex()) {
                     val r = if (c.isRegistered) "S" else "N"
                     val t = when (c) {
-                        is android.telephony.CellInfoLte -> "LTE"
-                        is android.telephony.CellInfoNr -> "NR"
-                        else -> "Other"
+                        is android.telephony.CellInfoLte -> "LTE(4G)"
+                        is android.telephony.CellInfoNr -> "NR(5G)"
+                        else -> "其他"
                     }
-                    sb.appendLine("  [$r] $t")
+                    sb.appendLine("  [$r] 基站${i+1}: $t")
                 }
             } catch (_: Exception) {}
             tv?.text = sb.toString()
         } catch (e: Exception) {
-            tv?.text = "Error: ${e.message}"
+            tv?.text = "错误: ${e.message}"
             Log.e("RadioInfo", "RatLoad", e)
         }
     }
 
     private fun netType(t: Int) = when(t) {
-        1->"GPRS";2->"EDGE";3->"UMTS";13->"LTE";20->"NR";else->"#$t"
+        1->"GPRS(2G慢速)";2->"EDGE(2G增强)";3->"UMTS(3G)"
+        13->"LTE(4G高速)";20->"NR(5G超高速)";else->"类型#$t"
     }
 }

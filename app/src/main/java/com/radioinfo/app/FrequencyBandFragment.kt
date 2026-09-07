@@ -34,28 +34,54 @@ class FrequencyBandFragment : Fragment() {
             val ctx = context ?: return
             val tm = ctx.getSystemService(android.telephony.TelephonyManager::class.java) ?: return
             val sb = StringBuilder()
-            sb.appendLine("=== Band ===")
+            sb.appendLine("=== 频段通信状态 ===")
+            sb.appendLine("(频段=基站使用的无线电频率范围)")
             try {
                 val cells = tm.allCellInfo ?: emptyList()
-                sb.appendLine("Cells: ${cells.size}")
-                for ((i, c) in cells.take(5).withIndex()) {
-                    val r = if (c.isRegistered) "S" else "N"
-                    when (c) {
-                        is android.telephony.CellInfoLte -> {
-                            val id = c.cellIdentity
-                            sb.appendLine("  [$r] LTE B? PCI:${id.pci}")
-                        }
-                        is android.telephony.CellInfoNr -> sb.appendLine("  [$r] NR")
-                        is android.telephony.CellInfoGsm -> sb.appendLine("  [$r] GSM")
-                        is android.telephony.CellInfoWcdma -> sb.appendLine("  [$r] WCDMA")
-                        else -> sb.appendLine("  [$r] ${c.javaClass.simpleName}")
+                sb.appendLine("")
+                sb.appendLine("检测到 ${cells.size} 个基站频段:")
+                val reg = cells.filter { it.isRegistered }
+                val nei = cells.filter { !it.isRegistered }
+                if (reg.isNotEmpty()) {
+                    sb.appendLine("")
+                    sb.appendLine("[服务小区] 当前连接的基站")
+                    for ((i, c) in reg.take(3).withIndex()) {
+                        appendDetail(sb, c, i+1)
                     }
                 }
+                if (nei.isNotEmpty()) {
+                    sb.appendLine("")
+                    sb.appendLine("[邻区] 附近的其他基站")
+                    for ((i, c) in nei.take(3).withIndex()) {
+                        appendDetail(sb, c, i+1)
+                    }
+                }
+                sb.appendLine("")
+                sb.appendLine("[频段说明]")
+                sb.appendLine("  B1/B3: 电信/联通4G常用频段")
+                sb.appendLine("  B41: 移动4G高频段(覆盖广)")
+                sb.appendLine("  n78: 5G主流频段")
+                sb.appendLine("  PCI: 物理小区标识(区分基站)")
             } catch (_: Exception) {}
             tv?.text = sb.toString()
         } catch (e: Exception) {
-            tv?.text = "Error: ${e.message}"
+            tv?.text = "错误: ${e.message}"
             Log.e("RadioInfo", "BandLoad", e)
         }
+    }
+
+    private fun appendDetail(sb: StringBuilder, cell: android.telephony.CellInfo, idx: Int) {
+        try {
+            when (cell) {
+                is android.telephony.CellInfoLte -> {
+                    val id = cell.cellIdentity
+                    sb.appendLine("  $idx. LTE(4G) PCI:${id.pci}")
+                }
+                is android.telephony.CellInfoNr -> sb.appendLine("  $idx. NR(5G)")
+                is android.telephony.CellInfoGsm -> sb.appendLine("  $idx. GSM(2G)")
+                is android.telephony.CellInfoWcdma -> sb.appendLine("  $idx. WCDMA(3G)")
+                else -> sb.appendLine("  $idx. 未知类型")
+            }
+        } catch (_: Exception) { sb.appendLine("  $idx. 读取失败") }
     }
 }
