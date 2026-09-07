@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="#1A1A2E" android:padding="6dp">
+
+    <Button android:id="@+id/btnRefresh"
+        android:layout_width="match_parent" android:layout_height="36dp"
+        android:text="刷新" android:textAllCaps="false" android:textSize="11sp"
+        android:layout_marginBottom="4dp" android:backgroundTint="#E94560" android:textColor="#FFF" />
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="3" android:fillViewport="true">
+        <TextView android:id="@+id/tvWifiMonitor"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:fontFamily="monospace" android:textSize="11sp" android:textColor="#C8D8E8"
+            android:padding="6dp" android:background="#16213E" android:lineSpacingExtra="2dp"
+            android:text="加载中..." />
+    </ScrollView>
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="▼ 信号强度曲线 (红色)" android:textColor="#E94560"
+        android:textSize="10sp" android:layout_marginTop="4dp" />
+
+    <com.radioinfo.app.ChartView android:id="@+id/chartWifiSignal"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="2" />
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="▼ 上下行流量曲线 (红=下载 绿=上传)" android:textColor="#8888AA"
+        android:textSize="10sp" android:layout_marginTop="2dp" />
+
+    <com.radioinfo.app.ChartView android:id="@+id/chartWifiTraffic"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="2" />
+
+</LinearLayout>

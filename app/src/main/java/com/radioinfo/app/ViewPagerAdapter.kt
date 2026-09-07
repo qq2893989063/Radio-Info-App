@@ -9,7 +9,7 @@ class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activi
     override fun createFragment(position: Int): Fragment = when (position) {
         0 -> SimStatusFragment()
         1 -> RatPriorityFragment()
-        2 -> WifiChannelFragment()
+        2 -> WifiMonitorFragment()
         3 -> FrequencyBandFragment()
         4 -> SignalStrengthFragment()
         5 -> TrafficChartFragment()
