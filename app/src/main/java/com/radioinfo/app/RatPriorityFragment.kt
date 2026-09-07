@@ -3,74 +3,62 @@ package com.radioinfo.app
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.telephony.CellInfo
-import android.telephony.CellInfoLte
-import android.telephony.CellInfoNr
-import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.radioinfo.app.databinding.FragmentRatBinding
 
 class RatPriorityFragment : Fragment() {
-    private var _binding: FragmentRatBinding? = null
-    private val binding get() = _binding!!
+    private var tv: TextView? = null
     private val handler = Handler(Looper.getMainLooper())
-    private val refreshRunnable = object : Runnable {
-        override fun run() { loadRatInfo(); handler.postDelayed(this, 3000) }
+    private val refresh = object : Runnable {
+        override fun run() { loadData(); handler.postDelayed(this, 3000) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentRatBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return try {
+            val v = inflater.inflate(com.radioinfo.app.R.layout.fragment_rat, container, false)
+            tv = v.findViewById(com.radioinfo.app.R.id.tvRatInfo)
+            v.findViewById<View>(com.radioinfo.app.R.id.btnRefresh)?.setOnClickListener { loadData() }
+            v
+        } catch (e: Exception) { Log.e("RadioInfo", "RatView", e); null }
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.btnRefresh.setOnClickListener { loadRatInfo() }
-    }
-    override fun onResume() { super.onResume(); handler.post(refreshRunnable) }
-    override fun onPause() { super.onPause(); handler.removeCallbacks(refreshRunnable) }
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 
-    private fun loadRatInfo() {
-        val tm = requireContext().getSystemService(TelephonyManager::class.java)
-        val sb = StringBuilder()
-        sb.appendLine("=== RAT 优先级 ===")
-        sb.appendLine("")
-        sb.appendLine("[当前网络]")
-        sb.appendLine("  数据网络: ${netType(tm.getDataNetworkType())}")
-        sb.appendLine("  语音网络: ${netType(tm.getVoiceNetworkType())}")
-        sb.appendLine("  数据状态: ${dataState(tm.getDataState())}")
-        sb.appendLine("  运营商: ${tm.getNetworkOperatorName() ?: "N/A"}")
+    override fun onResume() { super.onResume(); handler.post(refresh) }
+    override fun onPause() { super.onPause(); handler.removeCallbacks(refresh) }
 
-        sb.appendLine("")
-        sb.appendLine("[检测到的基站]")
+    private fun loadData() {
         try {
-            val cells: List<CellInfo> = tm.getAllCellInfo() ?: emptyList()
-            if (cells.isEmpty()) {
-                sb.appendLine("  无基站信息 (需要位置权限)")
-            } else {
-                for ((i, c) in cells.withIndex()) {
-                    val reg = if (c.isRegistered()) "已注册" else "未注册"
-                    val rat = when (c) {
-                        is CellInfoLte -> "LTE(4G)"
-                        is CellInfoNr -> "NR(5G)"
-                        else -> c.javaClass.simpleName
+            val ctx = context ?: return
+            val tm = ctx.getSystemService(android.telephony.TelephonyManager::class.java) ?: return
+            val sb = StringBuilder()
+            sb.appendLine("=== RAT ===")
+            sb.appendLine("Data: ${netType(tm.dataNetworkType)}")
+            sb.appendLine("Voice: ${netType(tm.voiceNetworkType)}")
+            sb.appendLine("Carrier: ${tm.networkOperatorName ?: "N/A"}")
+            try {
+                val cells = tm.allCellInfo ?: emptyList()
+                sb.appendLine("Cells: ${cells.size}")
+                for ((i, c) in cells.take(5).withIndex()) {
+                    val r = if (c.isRegistered) "S" else "N"
+                    val t = when (c) {
+                        is android.telephony.CellInfoLte -> "LTE"
+                        is android.telephony.CellInfoNr -> "NR"
+                        else -> "Other"
                     }
-                    sb.appendLine("  [$i] $reg - $rat")
+                    sb.appendLine("  [$r] $t")
                 }
-            }
-        } catch (e: SecurityException) {
-            sb.appendLine("  权限不足")
+            } catch (_: Exception) {}
+            tv?.text = sb.toString()
+        } catch (e: Exception) {
+            tv?.text = "Error: ${e.message}"
+            Log.e("RadioInfo", "RatLoad", e)
         }
-        binding.tvRatInfo.text = sb.toString()
     }
 
     private fun netType(t: Int) = when(t) {
-        1->"GPRS";2->"EDGE";3->"UMTS";8->"HSDPA";9->"HSUPA"
-        10->"HSPA";13->"LTE(4G)";15->"HSPA+";16->"GSM";20->"NR(5G)";0->"未知"
-        else->"#$t"
+        1->"GPRS";2->"EDGE";3->"UMTS";13->"LTE";20->"NR";else->"#$t"
     }
-    private fun dataState(s: Int) = when(s) { 0->"断开";1->"连接中";2->"已连接";3->"暂停";else->"未知" }
 }
