@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="#1A1A2E" android:padding="8dp">
+    <Button android:id="@+id/btnRefresh"
+        android:layout_width="match_parent" android:layout_height="40dp"
+        android:text="Refresh" android:textAllCaps="false" android:textSize="12sp"
+        android:layout_marginBottom="4dp" android:backgroundTint="#E94560" android:textColor="#FFF" />
+    <TextView android:id="@+id/tvRfInfo"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:fontFamily="monospace" android:textSize="12sp" android:textColor="#C8D8E8"
+        android:padding="8dp" android:background="#16213E" android:lineSpacingExtra="2dp"
+        android:text="Loading..." />
+    <com.radioinfo.app.ChartView android:id="@+id/chartRf"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:layout_marginTop="8dp" />
+</LinearLayout>

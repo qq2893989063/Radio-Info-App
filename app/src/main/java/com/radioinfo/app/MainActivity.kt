@@ -34,10 +34,8 @@ class MainActivity : AppCompatActivity() {
         try {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
-
             setSupportActionBar(binding.toolbar)
             supportActionBar?.title = "Radio Info App"
-
             setupViewPager()
             checkAndRequestPermissions()
             Log.d(TAG, "onCreate done")
@@ -50,10 +48,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupViewPager() {
         val adapter = ViewPagerAdapter(this)
         binding.viewPager.adapter = adapter
-        binding.viewPager.offscreenPageLimit = 2
-
+        binding.viewPager.offscreenPageLimit = 3
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal")[position]
+            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF")[position]
         }.attach()
     }
 
@@ -66,9 +63,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.d(TAG, "Permissions: ${grantResults.count { it == 0 }}/${grantResults.size}")
     }
