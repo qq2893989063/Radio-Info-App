@@ -5,13 +5,13 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRefresh"
         android:layout_width="match_parent" android:layout_height="48dp"
-        android:text="刷新信号强度" android:textAllCaps="false"
+        android:text="刷新 SIM 状态" android:textAllCaps="false"
         android:layout_marginBottom="8dp" android:backgroundTint="#E94560" android:textColor="#FFFFFF" />
     <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
         android:layout_weight="1" android:fillViewport="true">
-        <TextView android:id="@+id/tvSignalInfo"
+        <TextView android:id="@+id/tvSimInfo"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:fontFamily="monospace" android:textSize="12sp" android:textColor="#C8D8E8"
+            android:fontFamily="monospace" android:textSize="13sp" android:textColor="#C8D8E8"
             android:padding="12dp" android:background="#16213E" android:lineSpacingExtra="4dp"
             android:text="加载中..." />
     </ScrollView>
