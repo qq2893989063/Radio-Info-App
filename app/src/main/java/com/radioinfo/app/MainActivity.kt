@@ -15,13 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val tabTitles = arrayOf(
-        "SIM",
-        "RAT",
-        "WiFi",
-        "Band",
-        "Signal"
-    )
+    private val tabTitles = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal")
 
     private val requiredPermissions = mutableListOf<String>().apply {
         add(Manifest.permission.READ_PHONE_STATE)
@@ -36,20 +30,25 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        try {
+            binding = ActivityMainBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        // Set title directly on toolbar without setSupportActionBar
-        binding.toolbar.title = "Radio Info App"
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.title = "Radio Info App"
 
-        checkAndRequestPermissions()
-        setupViewPager()
+            setupViewPager()
+            checkAndRequestPermissions()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
     }
 
     private fun setupViewPager() {
         val adapter = ViewPagerAdapter(this)
         binding.viewPager.adapter = adapter
-        binding.viewPager.offscreenPageLimit = 4
+        binding.viewPager.offscreenPageLimit = 2
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = tabTitles[position]
@@ -60,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         val ungranted = requiredPermissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-
         if (ungranted.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, ungranted.toTypedArray(), 1001)
         }
@@ -70,17 +68,5 @@ class MainActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001) {
-            val denied = permissions.zip(grantResults.toList())
-                .filter { it.second != PackageManager.PERMISSION_GRANTED }
-                .map { it.first }
-
-            if (denied.isNotEmpty()) {
-                Toast.makeText(this,
-                    "Some permissions not granted, features may be limited",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
     }
 }
