@@ -23,14 +23,13 @@ class ChartView @JvmOverloads constructor(
     }
     private val linePaints = mutableListOf<Paint>()
     private val path = Path()
-
     private var lines = mutableListOf<List<Float>>()
     private var lineColors = listOf(
-        Color.parseColor("#E94560"),
-        Color.parseColor("#00FF88"),
-        Color.parseColor("#4488FF"),
-        Color.parseColor("#FFAA00"),
-        Color.parseColor("#FF44FF")
+        Color.parseColor("#FF90CAF9"),
+        Color.parseColor("#FF80CBC4"),
+        Color.parseColor("#FFFFCC80"),
+        Color.parseColor("#FFEF9A9A"),
+        Color.parseColor("#FFCE93D8")
     )
     private var yMin = -120f
     private var yMax = -40f
@@ -69,7 +68,6 @@ class ChartView @JvmOverloads constructor(
         val chartW = w - padL - padR
         val chartH = h - padT - padB
 
-        // Grid
         for (i in 0..gridRows) {
             val y = padT + chartH * i / gridRows
             canvas.drawLine(padL, y, w - padR, y, gridPaint)
@@ -77,12 +75,10 @@ class ChartView @JvmOverloads constructor(
             canvas.drawText("%.0f".format(val_at), 5f, y + 8f, textPaint)
         }
 
-        // Y axis label
         textPaint.textSize = 20f
         canvas.drawText(yLabel, 5f, padT - 2f, textPaint)
         textPaint.textSize = 24f
 
-        // Lines
         for ((idx, line) in lines.withIndex()) {
             if (line.size < 2) continue
             val paint = linePaints[idx % linePaints.size]
@@ -98,8 +94,7 @@ class ChartView @JvmOverloads constructor(
             canvas.drawPath(path, paint)
         }
 
-        // Legend
-        val labels = listOf("Download", "Upload", "Signal")
+        val labels = listOf("下载", "上传", "信号")
         for (i in 0 until minOf(lines.size, labels.size)) {
             val lx = padL + i * 120f
             textPaint.color = lineColors[i % lineColors.size]

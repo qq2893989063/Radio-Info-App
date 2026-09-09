@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
-    override fun getItemCount() = 7
+    override fun getItemCount() = 8
     override fun createFragment(position: Int): Fragment = when (position) {
         0 -> SimStatusFragment()
         1 -> RatPriorityFragment()
@@ -14,6 +14,7 @@ class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activi
         4 -> SignalStrengthFragment()
         5 -> TrafficChartFragment()
         6 -> RfChartFragment()
+        7 -> NetworkMonitorFragment()
         else -> SimStatusFragment()
     }
 }

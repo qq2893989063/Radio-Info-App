@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
             setSupportActionBar(binding.toolbar)
-            supportActionBar?.title = "Radio Info App"
             setupViewPager()
             checkAndRequestPermissions()
         } catch (e: Exception) { Log.e(TAG, "error", e); Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show() }
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager.adapter = ViewPagerAdapter(this)
         binding.viewPager.offscreenPageLimit = 3
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF")[position]
+            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF", "Net")[position]
         }.attach()
     }
 
