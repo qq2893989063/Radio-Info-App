@@ -4,7 +4,7 @@
 
 基于 ARM64-v8A 架构的 Android 应用，**无需 root 权限**即可获取无线通信信息。
 
-### 8个独立选项卡:
+### 9个独立选项卡:
 
 #### 1. 📱 SIM 状态
 - SIM卡状态 (就绪/缺失/锁定)
@@ -58,6 +58,12 @@
 - 本机 IP、默认网关
 - 受 Android 权限限制的 ARP 邻居表
 
+#### 9. 🔵 蓝牙
+- 经典蓝牙与 BLE 附近设备扫描
+- 广播名称、RSSI、协议类型和粗略距离估算
+- 本机 BLE 服务广播
+- 通过系统蓝牙分享器发送文件
+
 ## 技术规格
 
 - **架构**: ARM64-v8A (仅)
@@ -77,6 +83,9 @@
 | ACCESS_COARSE_LOCATION | 基站信息 |
 | ACCESS_WIFI_STATE | WiFi状态查询 |
 | NEARBY_WIFI_DEVICES | Android 13+ WiFi扫描 |
+| BLUETOOTH_SCAN | 扫描附近蓝牙广播 |
+| BLUETOOTH_CONNECT | 读取已发现设备信息 |
+| BLUETOOTH_ADVERTISE | 广播 Radio Info App 服务标识 |
 
 应用不会联网上传数据，所有信息仅在设备本地显示；备份规则也不会备份应用数据。
 
@@ -92,9 +101,11 @@
 cd RadioInfoApp
 ./gradlew assembleRelease
 ```
-输出: `app/build/outputs/apk/release/app-release-unsigned.apk`
+输出: `app/build/outputs/apk/release/app-release-unsigned.apk`（仅用于后续签名，不能直接安装）。
+
+发布或本地安装前，请使用 Android Studio 的 **Generate Signed App Bundle / APK**，或使用自己的受保护签名密钥完成 `zipalign` 和 `apksigner sign`。不要把密钥、密码或 unsigned APK 发布到 Release。
 
 ## 安装
 ```bash
-adb install app-release-unsigned.apk
+adb install <signed-release.apk>
 ```

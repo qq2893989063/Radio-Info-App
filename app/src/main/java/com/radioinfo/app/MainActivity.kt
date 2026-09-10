@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager.adapter = ViewPagerAdapter(this)
         binding.viewPager.offscreenPageLimit = 2
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF", "Net")[position]
+            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF", "Net", "Bluetooth")[position]
         }.attach()
     }
 

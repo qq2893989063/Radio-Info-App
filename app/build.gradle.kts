@@ -11,8 +11,8 @@ android {
         applicationId = "com.radioinfo.app"
         minSdk = 28
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3.1"
+        versionCode = 5
+        versionName = "1.4"
 
         ndk {
             abiFilters += "arm64-v8a"
