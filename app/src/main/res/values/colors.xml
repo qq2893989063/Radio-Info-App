@@ -1,12 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#0F3460</color>
-    <color name="primary_dark">#16213E</color>
-    <color name="accent">#E94560</color>
-    <color name="background_dark">#1A1A2E</color>
-    <color name="text_primary">#E8E8E8</color>
-    <color name="text_secondary">#A0A0C0</color>
-    <color name="card_bg">#16213E</color>
+    <!-- Material3 Color Tokens - Dark -->
+    <color name="md_primary">#FF90CAF9</color>
+    <color name="md_on_primary">#FF003258</color>
+    <color name="md_primary_container">#FF00497D</color>
+    <color name="md_on_primary_container">#FFD1E4FF</color>
+
+    <color name="md_secondary">#FFBBC7DB</color>
+    <color name="md_on_secondary">#FF253140</color>
+    <color name="md_secondary_container">#FF3B4858</color>
+    <color name="md_on_secondary_container">#FFD7E3F8</color>
+
+    <color name="md_tertiary">#FFD6BEE4</color>
+    <color name="md_on_tertiary">#FF3B2948</color>
+    <color name="md_tertiary_container">#FF523F5F</color>
+    <color name="md_on_tertiary_container">#FFFBF0FF</color>
+
+    <color name="md_error">#FFFFB4AB</color>
+    <color name="md_on_error">#FF690005</color>
+
+    <color name="md_background">#FF1A1C1E</color>
+    <color name="md_on_background">#FFE2E2E6</color>
+
+    <color name="md_surface">#FF1A1C1E</color>
+    <color name="md_on_surface">#FFE2E2E6</color>
+    <color name="md_surface_variant">#FF43474E</color>
+    <color name="md_on_surface_variant">#FFC3C6CF</color>
+
+    <color name="md_outline">#FF8D9199</color>
+    <color name="md_outline_variant">#FF43474E</color>
+
+    <!-- Legacy compat -->
+    <color name="primary">#FF90CAF9</color>
+    <color name="primary_dark">#FF00497D</color>
+    <color name="accent">#FFD6BEE4</color>
+    <color name="background_dark">#FF1A1C1E</color>
+    <color name="text_primary">#FFE2E2E6</color>
+    <color name="text_secondary">#FFC3C6CF</color>
+    <color name="card_bg">#FF1A1C1E</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

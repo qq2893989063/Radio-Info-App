@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">无线信号探测器</string>
+    <string name="permissions_limited">部分权限未授予，相关功能将受限</string>
 </resources>

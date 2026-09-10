@@ -4,7 +4,7 @@
 
 基于 ARM64-v8A 架构的 Android 应用，**无需 root 权限**即可获取无线通信信息。
 
-### 5个独立选项卡:
+### 8个独立选项卡:
 
 #### 1. 📱 SIM 状态
 - SIM卡状态 (就绪/缺失/锁定)
@@ -46,6 +46,18 @@
 - 信号强度可视化条
 - 服务小区/邻区排序
 
+#### 6. 📈 流量监控
+- 本机实时上下行速度
+- 累计流量与历史曲线
+
+#### 7. 📻 射频曲线
+- 服务小区/邻区信号强度曲线
+- LTE 频段与 NR-ARFCN 频率
+
+#### 8. 🌐 局域网
+- 本机 IP、默认网关
+- 受 Android 权限限制的 ARP 邻居表
+
 ## 技术规格
 
 - **架构**: ARM64-v8A (仅)
@@ -64,8 +76,9 @@
 | ACCESS_FINE_LOCATION | 基站信息、WiFi扫描 |
 | ACCESS_COARSE_LOCATION | 基站信息 |
 | ACCESS_WIFI_STATE | WiFi状态查询 |
-| CHANGE_WIFI_STATE | 触发WiFi扫描 |
 | NEARBY_WIFI_DEVICES | Android 13+ WiFi扫描 |
+
+应用不会联网上传数据，所有信息仅在设备本地显示；备份规则也不会备份应用数据。
 
 ## 构建方法
 

@@ -1,87 +1,99 @@
 package com.radioinfo.app
 
-import android.os.Build
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.telephony.CellInfo
-import android.telephony.CellInfoLte
-import android.telephony.CellInfoNr
-import android.telephony.CellInfoGsm
-import android.telephony.CellInfoWcdma
-import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.radioinfo.app.databinding.FragmentSignalBinding
+import androidx.core.content.ContextCompat
 
 class SignalStrengthFragment : Fragment() {
-    private var _binding: FragmentSignalBinding? = null
-    private val binding get() = _binding!!
+    private var tv: TextView? = null
     private val handler = Handler(Looper.getMainLooper())
-    private val refreshRunnable = object : Runnable {
-        override fun run() { loadSignalInfo(); handler.postDelayed(this, 2000) }
+    private val refresh = object : Runnable {
+        override fun run() { loadData(); handler.postDelayed(this, 2000) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSignalBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return try {
+            val v = inflater.inflate(com.radioinfo.app.R.layout.fragment_signal, container, false)
+            tv = v.findViewById(com.radioinfo.app.R.id.tvSignalInfo)
+            v.findViewById<View>(com.radioinfo.app.R.id.btnRefresh)?.setOnClickListener { loadData() }
+            v
+        } catch (e: Exception) { Log.e("RadioInfo", "SigView", e); null }
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.btnRefresh.setOnClickListener { loadSignalInfo() }
+
+    override fun onResume() { super.onResume(); handler.post(refresh) }
+    override fun onPause() { super.onPause(); handler.removeCallbacks(refresh) }
+
+    override fun onDestroyView() {
+        handler.removeCallbacks(refresh)
+        tv = null
+        super.onDestroyView()
     }
-    override fun onResume() { super.onResume(); handler.post(refreshRunnable) }
-    override fun onPause() { super.onPause(); handler.removeCallbacks(refreshRunnable) }
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 
-    private fun loadSignalInfo() {
-        val tm = requireContext().getSystemService(TelephonyManager::class.java)
-        val sb = StringBuilder()
-        sb.appendLine("=== 信号强度 ===")
-        sb.appendLine("")
-
-        sb.appendLine("[各基站信号]")
+    private fun loadData() {
         try {
-            val cells: List<CellInfo> = tm.getAllCellInfo() ?: emptyList()
-            if (cells.isEmpty()) {
-                sb.appendLine("  无基站信息 (需要位置权限)")
-            } else {
-                for ((i, cell) in cells.withIndex()) {
-                    val tag = if (cell.isRegistered()) "服务" else "邻区"
-                    sb.appendLine("  [$tag] 基站#${i+1}")
-                    when (cell) {
-                        is CellInfoLte -> {
-                            val c = cell.getCellIdentity()
-                            val s = cell.getCellSignalStrength()
-                            sb.appendLine("    LTE | PCI:${c.getPci()} EARFCN:${c.getEarfcn()}")
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                sb.appendLine("    RSRP:${s.getRsrp()} RSRQ:${s.getRsrq()} RSSNR:${s.getRssnr()}")
-                            }
-                            sb.appendLine("    Level:${s.getLevel()}/4")
-                        }
-                        is CellInfoNr -> {
-                            val c = cell.getCellIdentity() as android.telephony.CellIdentityNr
-                            val s = cell.getCellSignalStrength() as android.telephony.CellSignalStrengthNr
-                            sb.appendLine("    NR(5G) | PCI:${c.getPci()} NRARFCN:${c.getNrarfcn()}")
-                            sb.appendLine("    SS-RSRP:${s.getSsRsrp()} SS-RSRQ:${s.getSsRsrq()} SS-SINR:${s.getSsSinr()}")
-                            sb.appendLine("    Level:${s.getLevel()}/4")
-                        }
-                        is CellInfoGsm -> {
-                            val s = cell.getCellSignalStrength()
-                            sb.appendLine("    GSM | Level:${s.getLevel()}/4")
-                        }
-                        is CellInfoWcdma -> {
-                            val s = cell.getCellSignalStrength()
-                            sb.appendLine("    WCDMA | Level:${s.getLevel()}/4")
-                        }
-                    }
-                }
+            val ctx = context ?: return
+            if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                tv?.text = "需要位置权限才能读取基站信号"
+                return
             }
-        } catch (e: SecurityException) {
-            sb.appendLine("  权限不足")
+            val tm = ctx.getSystemService(android.telephony.TelephonyManager::class.java) ?: return
+            val sb = StringBuilder()
+            sb.appendLine("=== 信号强度详情 ===")
+            sb.appendLine("(dBm=分贝毫瓦, 数值越接近0信号越强)")
+            sb.appendLine("")
+            try {
+                val cells = tm.allCellInfo ?: emptyList()
+                if (cells.isEmpty()) {
+                    sb.appendLine("无基站信息(需授予位置权限)")
+                } else {
+                    sb.appendLine("共 ${cells.size} 个基站信号:")
+                    sb.appendLine("")
+                    for ((i, c) in cells.take(5).withIndex()) {
+                        val r = if (c.isRegistered) "服务" else "邻区"
+                        when {
+                            c is android.telephony.CellInfoLte -> {
+                                val s = c.cellSignalStrength
+                                sb.appendLine("[$r] LTE#${i+1}")
+                                sb.appendLine("  等级(Level): ${s.level}/4 (${levelDesc(s.level)})")
+                                sb.appendLine("  强度(dBm): ${s.dbm} dBm")
+                            }
+                            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q &&
+                                c is android.telephony.CellInfoNr -> {
+                                val s = c.cellSignalStrength
+                                sb.appendLine("[$r] 5G#${i+1}")
+                                sb.appendLine("  等级(Level): ${s.level}/4 (${levelDesc(s.level)})")
+                            }
+                            else -> sb.appendLine("[$r] 基站#${i+1}")
+                        }
+                        sb.appendLine("")
+                    }
+                    sb.appendLine("[信号等级说明]")
+                    sb.appendLine("  4级: 极佳(> -70dBm)  - 可流畅看4K视频")
+                    sb.appendLine("  3级: 良好(-70~-85dBm) - 日常使用流畅")
+                    sb.appendLine("  2级: 一般(-85~-100dBm) - 基本可用")
+                    sb.appendLine("  1级: 较弱(-100~-110dBm) - 可能卡顿")
+                    sb.appendLine("  0级: 极弱(< -110dBm) - 可能断连")
+                }
+            } catch (_: Exception) {}
+            tv?.text = sb.toString()
+        } catch (e: Exception) {
+            tv?.text = "暂时无法读取信号信息，请检查权限"
+            Log.e("RadioInfo", "SigLoad", e)
         }
-        binding.tvSignalInfo.text = sb.toString()
+    }
+
+    private fun levelDesc(l: Int) = when(l) {
+        4 -> "极佳"; 3 -> "良好"; 2 -> "一般"; 1 -> "较弱"; 0 -> "极弱"; else -> "未知"
     }
 }

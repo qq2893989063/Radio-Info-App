@@ -1,92 +1,77 @@
 package com.radioinfo.app
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.radioinfo.app.databinding.FragmentSimBinding
+import androidx.core.content.ContextCompat
 
 class SimStatusFragment : Fragment() {
-    private var _binding: FragmentSimBinding? = null
-    private val binding get() = _binding!!
+    private var tv: TextView? = null
     private val handler = Handler(Looper.getMainLooper())
-    private val refreshRunnable = object : Runnable {
-        override fun run() { loadSimInfo(); handler.postDelayed(this, 3000) }
+    private val refresh = object : Runnable {
+        override fun run() { loadData(); handler.postDelayed(this, 3000) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSimBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return try {
+            val v = inflater.inflate(com.radioinfo.app.R.layout.fragment_sim, container, false)
+            tv = v.findViewById(com.radioinfo.app.R.id.tvSimInfo)
+            v.findViewById<View>(com.radioinfo.app.R.id.btnRefresh)?.setOnClickListener { loadData() }
+            v
+        } catch (e: Exception) { Log.e("RadioInfo", "SimView", e); null }
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.btnRefresh.setOnClickListener { loadSimInfo() }
+
+    override fun onResume() { super.onResume(); handler.post(refresh) }
+    override fun onPause() { super.onPause(); handler.removeCallbacks(refresh) }
+
+    override fun onDestroyView() {
+        handler.removeCallbacks(refresh)
+        tv = null
+        super.onDestroyView()
     }
-    override fun onResume() { super.onResume(); handler.post(refreshRunnable) }
-    override fun onPause() { super.onPause(); handler.removeCallbacks(refreshRunnable) }
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 
-    private fun loadSimInfo() {
-        val tm = requireContext().getSystemService(TelephonyManager::class.java)
-        val sm = requireContext().getSystemService(SubscriptionManager::class.java)
-        val sb = StringBuilder()
-        sb.appendLine("=== SIM 卡状态信息 ===")
-        sb.appendLine("")
-
-        val state = when (tm.getSimState()) {
-            5 -> "SIM卡就绪 (READY)"
-            1 -> "SIM卡缺失 (ABSENT)"
-            2 -> "需要PIN码"
-            3 -> "需要PUK码"
-            4 -> "网络锁定"
-            6 -> "SIM卡未就绪"
-            7 -> "SIM卡永久禁用"
-            8 -> "SIM卡I/O错误"
-            9 -> "SIM卡受限"
-            else -> "未知状态 (${tm.getSimState()})"
-        }
-        sb.appendLine("[SIM卡状态] $state")
-        sb.appendLine("")
-        sb.appendLine("[运营商信息]")
-        sb.appendLine("  运营商名称: ${tm.getSimOperatorName() ?: "N/A"}")
-        sb.appendLine("  运营商代码: ${tm.getSimOperator() ?: "N/A"}")
-        sb.appendLine("  国家代码: ${tm.getSimCountryIso() ?: "N/A"}")
-        sb.appendLine("  ICCID: ${mask(tm.getSimSerialNumber())}")
-        sb.appendLine("  电话号码: ${mask(tm.getLine1Number())}")
-
-        sb.appendLine("")
-        sb.appendLine("[订阅信息]")
+    private fun loadData() {
         try {
-            val subs = sm.getActiveSubscriptionInfoList() ?: emptyList()
-            sb.appendLine("  活跃SIM卡: ${subs.size}张")
-            for ((i, sub) in subs.withIndex()) {
-                sb.appendLine("  [SIM${i+1}] ${sub.getDisplayName()} | ${sub.getCarrierName()}")
-                sb.appendLine("    ICCID: ${mask(sub.getIccId())} | 类型: ${if (sub.isEmbedded()) "eSIM" else "物理SIM"}")
+            val ctx = context ?: return
+            if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_PHONE_STATE) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                tv?.text = "需要电话状态权限才能读取 SIM 信息"
+                return
             }
-        } catch (e: SecurityException) {
-            sb.appendLine("  权限不足")
+            val tm = ctx.getSystemService(android.telephony.TelephonyManager::class.java) ?: return
+            val sb = StringBuilder()
+            sb.appendLine("=== SIM 卡状态信息 ===")
+            val state = when (tm.simState) {
+                android.telephony.TelephonyManager.SIM_STATE_READY -> "就绪 (READY) - SIM卡正常工作"
+                android.telephony.TelephonyManager.SIM_STATE_ABSENT -> "缺失 (ABSENT) - 未插入SIM卡"
+                android.telephony.TelephonyManager.SIM_STATE_PIN_REQUIRED -> "需要PIN码 - 输入SIM卡解锁码"
+                android.telephony.TelephonyManager.SIM_STATE_PUK_REQUIRED -> "需要PUK码 - PIN码输入次数过多被锁"
+                else -> "状态码:${tm.simState}"
+            }
+            sb.appendLine("SIM状态: $state")
+            sb.appendLine("运营商名称: ${tm.simOperatorName ?: "无"}")
+            sb.appendLine("运营商代码: ${tm.simOperator ?: "无"}")
+            sb.appendLine("国家代码: ${tm.simCountryIso ?: "无"}")
+            try {
+                val sm = ctx.getSystemService(android.telephony.SubscriptionManager::class.java)
+                val subs = sm?.activeSubscriptionInfoList ?: emptyList()
+                sb.appendLine("已插入SIM卡数量: ${subs.size}")
+                for (s in subs) sb.appendLine("  SIM卡: ${s.displayName} | 运营商: ${s.carrierName}")
+            } catch (_: Exception) {}
+            sb.appendLine("当前网络运营商: ${tm.networkOperatorName ?: "无"}")
+            tv?.text = sb.toString()
+        } catch (e: Exception) {
+            tv?.text = "暂时无法读取 SIM 信息，请检查权限"
+            Log.e("RadioInfo", "SimLoad", e)
         }
-
-        sb.appendLine("")
-        sb.appendLine("[当前网络]")
-        sb.appendLine("  网络运营商: ${tm.getNetworkOperatorName() ?: "N/A"}")
-        sb.appendLine("  数据网络: ${netType(tm.getDataNetworkType())}")
-        sb.appendLine("  语音网络: ${netType(tm.getVoiceNetworkType())}")
-        binding.tvSimInfo.text = sb.toString()
-    }
-
-    private fun mask(v: String?): String {
-        if (v.isNullOrEmpty()) return "N/A"
-        if (v.length <= 4) return "****"
-        return "*".repeat(v.length - 4) + v.takeLast(4)
-    }
-    private fun netType(t: Int) = when(t) {
-        1->"GPRS";2->"EDGE";3->"UMTS";8->"HSDPA";9->"HSUPA"
-        10->"HSPA";13->"LTE(4G)";15->"HSPA+";16->"GSM";20->"NR(5G)";else->"未知"
     }
 }

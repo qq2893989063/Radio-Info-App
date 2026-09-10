@@ -12,47 +12,29 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.radioinfo.app.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
-
-    private val tabTitles = arrayOf(
-        "SIM",
-        "RAT",
-        "WiFi",
-        "Band",
-        "Signal"
-    )
-
     private val requiredPermissions = mutableListOf<String>().apply {
         add(Manifest.permission.READ_PHONE_STATE)
         add(Manifest.permission.ACCESS_FINE_LOCATION)
         add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        add(Manifest.permission.ACCESS_WIFI_STATE)
-        add(Manifest.permission.CHANGE_WIFI_STATE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            add(Manifest.permission.NEARBY_WIFI_DEVICES)
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.NEARBY_WIFI_DEVICES)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Set title directly on toolbar without setSupportActionBar
-        binding.toolbar.title = "Radio Info App"
-
-        checkAndRequestPermissions()
+        // Keep the toolbar as a plain view. The app uses a NoActionBar theme.
+        binding.toolbar.title = getString(R.string.app_name)
         setupViewPager()
+        checkAndRequestPermissions()
     }
 
     private fun setupViewPager() {
-        val adapter = ViewPagerAdapter(this)
-        binding.viewPager.adapter = adapter
-        binding.viewPager.offscreenPageLimit = 4
-
+        binding.viewPager.adapter = ViewPagerAdapter(this)
+        binding.viewPager.offscreenPageLimit = 2
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = tabTitles[position]
+            tab.text = arrayOf("SIM", "RAT", "WiFi", "Band", "Signal", "Traffic", "RF", "Net")[position]
         }.attach()
     }
 
@@ -60,27 +42,20 @@ class MainActivity : AppCompatActivity() {
         val ungranted = requiredPermissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-
         if (ungranted.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, ungranted.toTypedArray(), 1001)
+            ActivityCompat.requestPermissions(this, ungranted.toTypedArray(), REQUEST_PERMISSIONS)
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001) {
-            val denied = permissions.zip(grantResults.toList())
-                .filter { it.second != PackageManager.PERMISSION_GRANTED }
-                .map { it.first }
-
-            if (denied.isNotEmpty()) {
-                Toast.makeText(this,
-                    "Some permissions not granted, features may be limited",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+        if (requestCode != REQUEST_PERMISSIONS) return
+        if (grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
+            Toast.makeText(this, getString(R.string.permissions_limited), Toast.LENGTH_LONG).show()
         }
+    }
+
+    companion object {
+        private const val REQUEST_PERMISSIONS = 1001
     }
 }
