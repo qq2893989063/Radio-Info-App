@@ -254,14 +254,18 @@ class BluetoothFragment : Fragment() {
             .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
             .setConnectable(false)
             .build()
+        // A legacy BLE advertisement is limited to 31 bytes. Keep the UUID and
+        // TX power in the primary packet and put the version marker in the scan response.
         val data = AdvertiseData.Builder()
             .addServiceUuid(serviceUuid)
-            .addServiceData(serviceUuid, byteArrayOf(1, 4))
             .setIncludeTxPowerLevel(true)
+            .build()
+        val scanResponse = AdvertiseData.Builder()
+            .addServiceData(serviceUuid, byteArrayOf(1, 4))
             .build()
         advertiser = localAdvertiser
         try {
-            localAdvertiser.startAdvertising(settings, data, advertiseCallback)
+            localAdvertiser.startAdvertising(settings, data, scanResponse, advertiseCallback)
         } catch (_: SecurityException) {
             render("蓝牙广播权限不足，请在系统设置中允许附近设备权限")
         }
